@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.env
+.vercel
+
+# NOTE: db.sqlite3 and staticfiles/ are intentionally NOT ignored here.
+# This project ships a pre-migrated, pre-seeded db.sqlite3 and pre-built
+# staticfiles/ (admin CSS/JS) so it works immediately after cloning/deploying,
+# since Vercel's Python builder doesn't run `manage.py collectstatic` for you.
+# If you add new static assets or change models, re-run:
+#   python manage.py collectstatic --noinput
+#   python manage.py migrate
+# and commit the results.
