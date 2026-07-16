@@ -1,9 +1,14 @@
 """
-Django settings for portfolio_backend project.
+Django settings for portfolio project.
 """
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+
+CORS_ALLOWED_ORIGINS = [
+    "https://rashelmahmudrabbi.github.io",
+    "http://localhost:5500",   # for local testing
+]
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
@@ -41,7 +46,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'portfolio_backend.urls'
+ROOT_URLCONF = 'portfolio.urls'
 
 TEMPLATES = [
     {
@@ -59,7 +64,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'portfolio_backend.wsgi.application'
+WSGI_APPLICATION = 'portfolio.wsgi.application'
 
 # --- Database ---
 # SQLite file lives inside the backend folder. On a normal host (your own
