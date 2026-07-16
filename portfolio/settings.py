@@ -9,9 +9,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = False
 
-ALLOWED_HOSTS = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', '*').split(',') if h.strip()]
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -37,8 +37,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'portfolio.urls'          # ← Changed
-WSGI_APPLICATION = 'portfolio.wsgi.application'   # ← Changed
+ROOT_URLCONF = 'portfolio.urls'
+WSGI_APPLICATION = 'portfolio.wsgi.application'
 
 TEMPLATES = [
     {
@@ -56,7 +56,6 @@ TEMPLATES = [
     },
 ]
 
-# Database - SQLite works great on Render
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -87,14 +86,12 @@ STORAGES = {
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# ====================== CORS ======================
 CORS_ALLOWED_ORIGINS = [
     "https://rashelmahmudrabbi.github.io",
     "http://localhost:5500",
     "http://127.0.0.1:5500",
 ]
 
-# ====================== REST Framework ======================
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.AllowAny'],
 }
