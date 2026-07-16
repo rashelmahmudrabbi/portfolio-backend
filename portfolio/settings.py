@@ -4,16 +4,8 @@ Django settings for portfolio project.
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-
 # pyrefly: ignore [missing-import]
 import dj_database_url
-
-DATABASES = {
-    'default': dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=600,
-    )
-}
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
@@ -24,7 +16,6 @@ SECRET_KEY = os.environ.get(
     'django-insecure-fallback-key-change-me-in-production-immediately'
 )
 
-# On Vercel DEBUG should stay False; locally you can flip it via .env
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = ['*']
@@ -76,18 +67,12 @@ TEMPLATES = [
 ]
 
 # ─── Database ─────────────────────────────────────────────────────────────────
-# Vercel's filesystem is ephemeral/read-only, so SQLite must live in /tmp.
-# Locally the db.sqlite3 sits right next to manage.py as usual.
-if os.environ.get('VERCEL'):
-    DB_PATH = Path('/tmp') / 'db.sqlite3'
-else:
-    DB_PATH = BASE_DIR / 'db.sqlite3'
-
+# Uses DATABASE_URL env var if set (Render Postgres); falls back to local SQLite.
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': DB_PATH,
-    }
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+    )
 }
 
 # ─── Auth password validators ─────────────────────────────────────────────────
