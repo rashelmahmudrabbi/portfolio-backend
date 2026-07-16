@@ -5,6 +5,16 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
+# pyrefly: ignore [missing-import]
+import dj_database_url
+
+DATABASES = {
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+    )
+}
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
