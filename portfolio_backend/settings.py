@@ -1,14 +1,10 @@
 """
-Django settings for portfolio project.
+Django settings for portfolio_backend project.
 """
 import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-CORS_ALLOWED_ORIGINS = [
-    "https://rashelmahmudrabbi.github.io",
-    "http://localhost:5500",   # for local testing
-]
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
@@ -46,7 +42,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'portfolio.urls'
+ROOT_URLCONF = 'portfolio_backend.urls'
 
 TEMPLATES = [
     {
@@ -64,7 +60,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'portfolio.wsgi.application'
+WSGI_APPLICATION = 'portfolio_backend.wsgi.application'
 
 # --- Database ---
 # SQLite file lives inside the backend folder. On a normal host (your own
@@ -123,13 +119,19 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # --- CORS ---
 # Comma-separated list of frontend origins allowed to call this API,
 # e.g. "https://your-frontend.vercel.app,http://localhost:5500"
+# Comma-separated origins from env var take priority.
+# Falls back to the two known frontend URLs so deployments work out of the box
+# without needing to set the env var every time.
 _cors_origins = [o.strip() for o in os.environ.get('CORS_ORIGINS', '').split(',') if o.strip()]
 if _cors_origins:
     CORS_ALLOWED_ORIGINS = _cors_origins
 else:
-    # No origins configured yet (e.g. first local run) - allow all so the
-    # site still works; tighten this once you know your frontend's URL.
-    CORS_ALLOW_ALL_ORIGINS = True
+    CORS_ALLOWED_ORIGINS = [
+        "https://rashelmahmudrabbi.github.io",
+        "http://localhost:5500",
+        "http://localhost:5173",
+        "http://127.0.0.1:5500",
+    ]
 
 # --- REST framework ---
 REST_FRAMEWORK = {
