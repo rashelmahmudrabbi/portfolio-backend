@@ -5,8 +5,7 @@
             "src": "portfolio/wsgi.py",
             "use": "@vercel/python",
             "config": {
-                "maxLambdaSize": "15mb",
-                "runtime": "python3.12"
+                "maxLambdaSize": "15mb"
             }
         }
     ],
@@ -18,6 +17,7 @@
     ],
     "env": {
         "DJANGO_SETTINGS_MODULE": "portfolio.settings",
-        "VERCEL": "1"
+        "VERCEL": "1",
+        "DEBUG": "False"
     }
 }
