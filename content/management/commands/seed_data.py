@@ -43,7 +43,15 @@ class Command(BaseCommand):
         self.seed_references()
         self.stdout.write(self.style.SUCCESS('Seed complete!'))
 
+    # ── helpers ──────────────────────────────────────────────────────────────
+    def _skip(self, label, qs):
+        """Return True (and print a skip message) if data exists and --force was NOT passed."""
+        if not self.force and qs.exists():
+            self.stdout.write(f'  Skipping {label} — data already exists (use --force to overwrite).')
+            return True
+        return False
 
+    # ── superuser ────────────────────────────────────────────────────────────
     def create_superuser(self):
         User = get_user_model()
         username = os.environ.get('ADMIN_USERNAME', 'admin')
@@ -54,8 +62,16 @@ class Command(BaseCommand):
         User.objects.create_superuser(username=username, email='', password=password)
         self.stdout.write(self.style.SUCCESS(f'Admin user created: {username}'))
 
+    # ── settings (singleton — only seed if name is blank or --force) ─────────
     def seed_settings(self):
         s = models.SiteSettings.load()
+        # For the singleton we treat "name is already set" as "already configured"
+        if not self.force and s.name:
+            self.stdout.write(
+                f'  Skipping Site Settings — already configured as "{s.name}" (use --force to overwrite).'
+            )
+            return
+
         s.name = 'Rashel Mahmud Rabbi'
         s.title = 'Graduate Researcher – Computer Vision & AI'
         s.email = 'raselmahud6757@gmail.com'
@@ -141,9 +157,12 @@ class Command(BaseCommand):
         ]):
             models.TeachingArea.objects.create(settings=s, order=i, topic=topic, desc=desc)
 
-        self.stdout.write('Settings seeded.')
+        self.stdout.write('  Settings seeded.')
 
+    # ── education ────────────────────────────────────────────────────────────
     def seed_education(self):
+        if self._skip('Education', models.Education.objects.all()):
+            return
         models.Education.objects.all().delete()
         rows = [
             ('B.Sc in CSE', 'Computer Science & Engineering', 'North Bengal International University', '2025', '3.87/4.00'),
@@ -154,8 +173,12 @@ class Command(BaseCommand):
         ]
         for i, (degree, major, institution, year, grade) in enumerate(rows):
             models.Education.objects.create(order=i, degree=degree, major=major, institution=institution, year=year, grade=grade)
+        self.stdout.write('  Education seeded.')
 
+    # ── experience ───────────────────────────────────────────────────────────
     def seed_experience(self):
+        if self._skip('Experience', models.Experience.objects.all()):
+            return
         models.Experience.objects.all().delete()
         models.Experience.objects.create(
             order=0,
@@ -169,8 +192,12 @@ class Command(BaseCommand):
                 'Experienced in dataset preprocessing, model optimization, and evaluation',
             ]),
         )
+        self.stdout.write('  Experience seeded.')
 
+    # ── publications ─────────────────────────────────────────────────────────
     def seed_publications(self):
+        if self._skip('Publications', models.Publication.objects.all()):
+            return
         models.Publication.objects.all().delete()
         models.Publication.objects.create(
             order=0, type='conference', status='published',
@@ -200,8 +227,12 @@ class Command(BaseCommand):
             abstract='A lightweight hybrid CNN-Transformer architecture for automated, interpretable, multi-stage acute lymphoblastic leukemia (ALL) classification, combining an EfficientNetV2-RW-T backbone with a Swin Transformer Tiny, achieving 99.69% binary accuracy and 100% staging accuracy.',
             doi_link='', pdf_link='',
         )
+        self.stdout.write('  Publications seeded.')
 
+    # ── projects ─────────────────────────────────────────────────────────────
     def seed_projects(self):
+        if self._skip('Projects', models.Project.objects.all()):
+            return
         models.Project.objects.all().delete()
         rows = [
             dict(order=0, category='thesis', featured=True,
@@ -242,8 +273,12 @@ class Command(BaseCommand):
         ]
         for row in rows:
             models.Project.objects.create(**row)
+        self.stdout.write('  Projects seeded.')
 
+    # ── certifications ───────────────────────────────────────────────────────
     def seed_certifications(self):
+        if self._skip('Certifications', models.Certification.objects.all()):
+            return
         models.Certification.objects.all().delete()
         models.Certification.objects.create(
             order=0, title='Data Science Math Skills', issuer='Coursera', year='2024',
@@ -257,13 +292,21 @@ class Command(BaseCommand):
             verify_link='https://coursera.org/verify/KJ1TIFBGN6W3',
             pdf_link='media/certifications/pdfs/Coursera_Python_Basics_KJ1TIFBGN6W3.pdf',
         )
+        self.stdout.write('  Certifications seeded.')
 
+    # ── awards ───────────────────────────────────────────────────────────────
     def seed_awards(self):
+        if self._skip('Awards', models.Award.objects.all()):
+            return
         models.Award.objects.all().delete()
         models.Award.objects.create(order=0, title='2nd Runner-Up, IEEE ProCon App Idea Competition', org='IEEE', year='2025', image='media/awards/Idea_with_Poster_Presentation.jpg')
         models.Award.objects.create(order=1, title='1st Position, Research Olympiad – Rajshahi Regional', org='Rajshahi University Research Society (RURS)', year='2024', image='media/awards/Research_Olympiad.jpg')
+        self.stdout.write('  Awards seeded.')
 
+    # ── activities ───────────────────────────────────────────────────────────
     def seed_activities(self):
+        if self._skip('Activities', models.Activity.objects.all()):
+            return
         models.Activity.objects.all().delete()
         for i, text in enumerate([
             'President, Computer Society – NBIU',
@@ -271,22 +314,33 @@ class Command(BaseCommand):
             'Active involvement in tech competitions and academic events',
         ]):
             models.Activity.objects.create(order=i, text=text)
+        self.stdout.write('  Activities seeded.')
 
+    # ── gallery ──────────────────────────────────────────────────────────────
     def seed_gallery(self):
+        if self._skip('Gallery', models.GalleryEvent.objects.all()):
+            return
         models.GalleryEvent.objects.all().delete()
         ev1 = models.GalleryEvent.objects.create(order=0, title='IEEE ProCon App Idea Competition', year='2025')
         models.GalleryPhoto.objects.create(event=ev1, order=0, src='media/gallery/ProCON/Group Photo.jpg', caption='Group Photo')
         models.GalleryPhoto.objects.create(event=ev1, order=1, src='media/gallery/ProCON/Award Ceremony.jpg', caption='Award Ceremony')
-
         ev2 = models.GalleryEvent.objects.create(order=1, title='Research Olympiad – Rajshahi Regional', year='2024')
         models.GalleryPhoto.objects.create(event=ev2, order=0, src='media/gallery/Research-Olympiad/Stage Award.jpg', caption='Stage Award')
         models.GalleryPhoto.objects.create(event=ev2, order=1, src='media/gallery/Research-Olympiad/Cover.jpg', caption='Cover')
+        self.stdout.write('  Gallery seeded.')
 
+    # ── courses ──────────────────────────────────────────────────────────────
     def seed_courses(self):
+        if self._skip('Courses', models.Course.objects.all()):
+            return
         models.Course.objects.all().delete()
         models.Course.objects.create(order=0, name='CSE-22', institution='NBIU, Rajshahi', period='2023 – 2024', role='Teaching Assistant')
+        self.stdout.write('  Courses seeded.')
 
+    # ── blog ─────────────────────────────────────────────────────────────────
     def seed_blog(self):
+        if self._skip('Blog posts', models.BlogPost.objects.all()):
+            return
         models.BlogPost.objects.all().delete()
         rows = [
             dict(order=0, featured=True, title='Why Explainability Matters in Medical AI — and How LIME Helps',
@@ -312,9 +366,14 @@ class Command(BaseCommand):
         ]
         for row in rows:
             models.BlogPost.objects.create(**row)
+        self.stdout.write('  Blog posts seeded.')
 
+    # ── references ───────────────────────────────────────────────────────────
     def seed_references(self):
+        if self._skip('References', models.Reference.objects.all()):
+            return
         models.Reference.objects.all().delete()
         models.Reference.objects.create(order=0, name='Md. Emdadul Haque', role='Lecturer & Head, Department of CSE', org='North Bengal International University', note='', phone='+8801773-897585', email='haque.emdadul.one5@gmail.com')
         models.Reference.objects.create(order=1, name='Md. Shafiuzzaman', role='Lecturer, Department of CSE', org='North Bengal International University', note='Research Supervisor', phone='+8801780-165924', email='shafiuzzaman.ruet@gmail.com')
         models.Reference.objects.create(order=2, name='Saifur Rahman', role='Lecturer, Department of CSE', org='North Bengal International University', note='Thesis External Examiner', phone='+8801738-663624', email='saifur.naim30@gmail.com')
+        self.stdout.write('  References seeded.')
