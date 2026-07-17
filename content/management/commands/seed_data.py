@@ -8,10 +8,26 @@ from content import models
 
 
 class Command(BaseCommand):
-    help = "Seeds the database with the original portfolio content and creates the admin superuser."
+    help = (
+        "Seeds the database with the original portfolio content and creates the admin superuser.\n"
+        "By default, skips any section that already has data.\n"
+        "Pass --force to wipe and re-seed everything (WARNING: overwrites all your changes)."
+    )
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--force',
+            action='store_true',
+            help='Wipe existing data and re-seed everything. WARNING: all admin edits will be lost.',
+        )
 
     @transaction.atomic
     def handle(self, *args, **options):
+        self.force = options['force']
+        if self.force:
+            self.stdout.write(self.style.WARNING(
+                'Running in FORCE mode — all existing data will be overwritten.'
+            ))
         self.create_superuser()
         self.seed_settings()
         self.seed_education()
@@ -26,6 +42,7 @@ class Command(BaseCommand):
         self.seed_blog()
         self.seed_references()
         self.stdout.write(self.style.SUCCESS('Seed complete!'))
+
 
     def create_superuser(self):
         User = get_user_model()
